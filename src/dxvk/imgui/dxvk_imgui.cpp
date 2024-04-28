@@ -279,6 +279,22 @@ namespace dxvk {
       {SkyAutoDetectMode::CameraPositionAndDepthFlags, "By Camera Position and Depth Flags"}
   } });
 
+  static auto SkyScaleCalibrationModeCombo = ImGui::ComboWithKey<SkyScaleCalibrationMode>(
+    "3D Sky Scale Calibration",
+    ImGui::ComboWithKey<SkyScaleCalibrationMode>::ComboEntries { {
+      {SkyScaleCalibrationMode::Fixed, "Always Use Default Scale"},
+      {SkyScaleCalibrationMode::DeltaAutomatic, "Calculate From Delta (Main vs Sky)"},
+      {SkyScaleCalibrationMode::SourceEngineAutomatic, "Calculate From Source Engine Approximation"}
+  } });
+
+  static auto SkyScaleOffsetFormulaCombo = ImGui::ComboWithKey<SkyScaleOffsetFormula>(
+    "3D Sky Offset Formula",
+    ImGui::ComboWithKey<SkyScaleOffsetFormula>::ComboEntries { {
+      {SkyScaleOffsetFormula::Origin, "Origin Based"},
+      {SkyScaleOffsetFormula::Linear, "Linear Based"},
+      {SkyScaleOffsetFormula::SourceEngine, "Source Engined Based (Hyperbolic)"}
+  } });
+
   static auto upscalerNoDLSSCombo = ImGui::ComboWithKey<UpscalerType>(
     "Upscaler Type",
     { {
@@ -1429,6 +1445,11 @@ namespace dxvk {
               if (c) {
                 ImGui::Text("Position: %.2f %.2f %.2f", c->getPosition().x, c->getPosition().y, c->getPosition().z);
                 ImGui::Text("Direction: %.2f %.2f %.2f", c->getDirection().x, c->getDirection().y, c->getDirection().z);
+                if (c->m_type == CameraType::Sky)
+                {
+                  ImGui::Text("Sky Offset: %.2f %.2f %.2f", c->m_skyOffset.x, c->m_skyOffset.y, c->m_skyOffset.z);
+                  ImGui::Text("Sky Scale: %.2f", c->m_skyScale);
+                }
                 ImGui::Text("Vertical FOV: %.1f", c->getFov() * kRadiansToDegrees);
                 ImGui::Text("Near / Far plane: %.1f / %.1f", c->getNearPlane(), c->getFarPlane());
                 ImGui::Text(c->isLHS() ? "Left-handed" : "Right-handed");
@@ -2208,6 +2229,20 @@ namespace dxvk {
         ImGui::InputInt("First N untextured drawcalls", &RtxOptions::Get()->skyDrawcallIdThresholdObject(), 1, 1, 0);
         ImGui::SliderFloat("Sky Min Z Threshold", &RtxOptions::Get()->skyMinZThresholdObject(), 0.0f, 1.0f);
         skyAutoDetectCombo.getKey(&RtxOptions::Get()->skyAutoDetectObject());
+
+        if (ImGui::CollapsingHeader("3D Skybox Settings", collapsingHeaderClosedFlags)) {
+          ImGui::Checkbox("Enable Shared Depth", &RtxOptions::skySharedDepthObject() );
+          ImGui::Separator();
+          ImGui::Checkbox("Enable 3D Skybox Pathtracing ", &RtxOptions::skyBoxPathTracingObject());
+
+          if (RtxOptions::skyBoxPathTracing()) {
+            ImGui::InputInt("Default Scale", &RtxOptions::Get()->skyDefaultScaleObject(), 1, 1, 1);
+
+            SkyScaleCalibrationModeCombo.getKey(&RtxOptions::Get()->skyScaleCalibrationModeObject());
+            SkyScaleOffsetFormulaCombo.getKey(&RtxOptions::Get()->skyScaleOffsetFormulaObject());
+          }
+
+        };
 
         if (ImGui::CollapsingHeader("Advanced", collapsingHeaderClosedFlags)) {
           ImGui::Checkbox("Force HDR sky", &RtxOptions::Get()->skyForceHDRObject());

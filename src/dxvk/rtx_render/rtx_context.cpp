@@ -30,6 +30,7 @@
 #include "rtx_render/rtx_shader_manager.h"
 #include "dxvk_adapter.h"
 #include "rtx_context.h"
+#include "rtx_materials.h"
 #include "rtx_asset_exporter.h"
 #include "rtx_options.h"
 #include "rtx_bindless_resource_manager.h"
@@ -1964,6 +1965,9 @@ namespace dxvk {
     skyRt.color[0].view = getResourceManager().getCompatibleViewForView(skyMatteView, m_skyRtColorFormat);
     skyRt.color[0].layout = VK_IMAGE_LAYOUT_GENERAL;
 
+    if( RtxOptions::Get()->skySharedDepth() )
+      skyRt.depth = m_state.om.renderTargets.depth;
+
     bindRenderTargets(skyRt);
 
     if (m_skyClearDirty) {
@@ -2290,7 +2294,9 @@ namespace dxvk {
     const uint32_t curViewportCount = m_state.gp.state.rs.viewportCount();
     const DxvkViewportState curVp = m_state.vp;
 
-    rasterizeToSkyMatte(params, drawCallState.minZ, drawCallState.maxZ);
+    if( !RtxOptions::Get()->skyBoxPathTracing() || drawCallState.getCategoryFlags() == InstanceCategories::Sky )
+      rasterizeToSkyMatte(params, drawCallState.minZ, drawCallState.maxZ);
+
     // TODO: make probe optional?
     rasterizeToSkyProbe(params, drawCallState);
 

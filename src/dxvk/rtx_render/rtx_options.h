@@ -141,6 +141,19 @@ namespace dxvk {
     CameraPositionAndDepthFlags
   };
 
+  enum class SkyScaleOffsetFormula : int {
+    Origin = 0,
+    Linear,
+    SourceEngine
+  };
+
+  enum class SkyScaleCalibrationMode : int {
+    Fixed = 0,
+    DeltaAutomatic,
+    SourceEngineAutomatic
+  };
+
+
   enum class EnableVsync : int {
     Off = 0,
     On = 1,
@@ -892,6 +905,7 @@ namespace dxvk {
 
     RTX_OPTION("rtx", float, skyBrightness, 1.f, "");
     RTX_OPTION("rtx", bool, skyForceHDR, false, "By default sky will be rasterized in the color format used by the game. Set the checkbox to force sky to be rasterized in HDR intermediate format. This may be important when sky textures replaced with HDR textures.");
+
     RTX_OPTION("rtx", uint32_t, skyProbeSide, 1024, "");
     RTX_OPTION_FLAG("rtx", uint32_t, skyUiDrawcallCount, 0, RtxOptionFlags::NoSave, "");
     RTX_OPTION("rtx", uint32_t, skyDrawcallIdThreshold, 0, "It's common in games to render the skybox first, and so, this value provides a simple mechanism to identify those early draw calls that are untextured (textured draw calls can still use the Sky Textures functionality.");
@@ -902,6 +916,27 @@ namespace dxvk {
                "1 = CameraPosition - assume the first seen camera position is a sky camera.\n"
                "2 = CameraPositionAndDepthFlags - assume the first seen camera position is a sky camera, if its draw call's depth test is disabled. If it's enabled, assume no sky camera.\n"
                "Note: if all draw calls are marked as sky, then assume that there's no sky camera at all.");
+
+
+    RTX_OPTION("rtx", bool, skySharedDepth, false, "By default the sky box will write to a seperate depth buffer than the main camera. Set the checkbox to cause the sky to use the same depth buffer as the main camera. Useful for source engine games.");
+    RTX_OPTION("rtx", bool, skyBoxPathTracing, false, "For games with skyboxes, the geometry is usually rasterized immediately into the sky camera buffer, preventing it from being path traced. Enable this setting to translate the skybox instances to the main camera.");
+
+    RTX_OPTION("rtx", SkyScaleOffsetFormula, skyScaleOffsetFormula, SkyScaleOffsetFormula::Origin,
+             "How we should determine the offset to use when translating the skybox to the main view.\n"
+             "0 = Origin - assume the rendered skybox does not move relative to anything, and is fixed in it's coordinate space.\n"
+             "1 = Linear - assume the movement from the main camera effects the position of the rendered skyboxes by some linear offset.\n"
+             "2 = SourceEngine - assume the movement from the main camera effects the skybox instances hyperbolically. This formula is directly tailored to the source engine.\n"
+             "Note: The scale found in the sky calibration may be used to calculate the offset for more dynamic formulas.");
+
+    RTX_OPTION("rtx", uint32_t, skyDefaultScale, 1, "The default / fallback scale to use when scaling the sky instances.");
+
+    RTX_OPTION("rtx", SkyScaleCalibrationMode, skyScaleCalibrationMode, SkyScaleCalibrationMode::Fixed,
+             "How should we determine the scale and offset to use when scaling the skybox instances to the main view.\n"
+             "0 = Fixed - Use the single specified scale no matter what the game is doing.\n"
+             "1 = DeltaAutomatic - Use the change in positions of the main camera and sky camera to determine the skybox scale. Reliable if your skybox is a function of movement.\n"
+             "2 = SourceEngineAutomatic - Uses a reversed algorithm of the hyperbolic source engine formula to approximate the scale. Useful for source games with levels that have dynamic scaling skyboxes.\n"
+             "Note: Source Engine Calibration should only really be used in source games if you have an inconsistent scale, or the player may not move for a few frames. Delta or Fixed is far more reliable.");
+
 
     // TODO (REMIX-656): Remove this once we can transition content to new hash
     RTX_OPTION("rtx", bool, logLegacyHashReplacementMatches, false, "");

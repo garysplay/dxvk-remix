@@ -199,6 +199,11 @@ namespace dxvk
       uint32_t flags;
     };
 
+    uint32_t m_skyScale = 1;
+    uint32_t m_lastSkyScale = 1;
+    Vector3 m_skyOffset;
+    Vector3 m_lastPosition;
+
     // Note: All camera matricies stored as double precision. While this does not do much for some matricies (which were provided
     // by the application in floating point precision), it does help for preserving matrix stability on those which have been inverted,
     // as well as in code using these matrices which may do further inversions or combination operations. If such precision is not needed
@@ -318,6 +323,19 @@ namespace dxvk
     static void showImguiSettings();
 
     const RtCameraSetting& getSetting();
+
+    void saveLastPosition(const Vector3& lastPos ) {
+      m_lastPosition = lastPos;
+    };
+
+    void setSkyOffset(const Vector3& skyOffset) {
+      m_skyOffset = skyOffset;
+    };
+
+    void setSkyScale(int scale) {
+      m_lastSkyScale = m_skyScale;
+      m_skyScale = scale;
+    };
 
   private:
     Matrix4d getShakenViewToWorldMatrix(Matrix4d& viewToWorld, uint32_t flags);
