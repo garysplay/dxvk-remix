@@ -281,7 +281,7 @@ namespace dxvk {
               skyCamera.setSkyScale(RtxOptions::Get()->skyDefaultScale());
               break;
             case SkyScaleCalibrationMode::DeltaAutomatic:
-              if ( !areClose(curSkyPos, lastSkyPos) ) {
+              if ( !areClose(curSkyPos, lastSkyPos) && shouldUpdateMainCamera ) {
                 float mdiff = lengthSqr(curCamPos - lastCamPos);
                 float sdiff = lengthSqr(curSkyPos - lastSkyPos);
 

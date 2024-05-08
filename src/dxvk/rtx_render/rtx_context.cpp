@@ -2388,7 +2388,7 @@ namespace dxvk {
     const DxvkViewportState curVp = m_state.vp;
 
     if( !RtxOptions::Get()->skyBoxPathTracing() || drawCallState.getCategoryFlags() == InstanceCategories::Sky )
-      rasterizeToSkyMatte(params, drawCallState.minZ, drawCallState.maxZ);
+      rasterizeToSkyMatte(params, drawCallState);
 
     // TODO: make probe optional?
     rasterizeToSkyProbe(params, drawCallState);
