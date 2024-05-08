@@ -264,15 +264,11 @@ namespace dxvk {
                   "Defines which hashes we need to include when sampling from replacements and doing USD capture.");
     
   public:
-#ifdef REMIX_DEVELOPMENT
-    // Note, this is currently a debug option we don't want to support in shipping config
+    RTX_OPTION("rtx", bool, showRaytracingOption, true, "Enables or disables the option to toggle ray tracing in the UI. When set to false the ray tracing checkbox will not appear in the Remix UI.");
+
     RTX_OPTION_ENV("rtx", bool, enableRaytracing, true, "DXVK_ENABLE_RAYTRACING",
                    "Globally enables or disables ray tracing. When set to false the original game should render mostly as it would in DXVK typically.\n"
                    "Some artifacts may still appear however compared to the original game either due to issues with the underlying DXVK translation or issues in Remix itself.");
-#else
-    // Shipping config
-    static bool enableRaytracing() { return true; }
-#endif
 
     RTX_OPTION_ENV("rtx", float, timeDeltaBetweenFrames, 0.f, "RTX_FRAME_TIME_DELTA_MS", "Frame time delta to use during scene processing. Setting this to 0 will use actual frame time delta for a given frame. Non-zero value is primarily used for automation to ensure determinism run to run.");
 
@@ -416,10 +412,13 @@ namespace dxvk {
                    "Denoising is important for filtering the raw noisy ray traced signal into a smoother and more stable result at the cost of some potential spatial/temporal artifacts (ghosting, boiling, blurring, etc).\n"
                    "Generally should remain enabled except when debugging behavior which requires investigating the output directly, or diagnosing denoising-related issues.");
     RTX_OPTION_ENV("rtx", bool, useDenoiserReferenceMode, false, "DXVK_USE_DENOISER_REFERENCE_MODE",
-                   "Enables the reference \"denoiser\" when set to true, otherwise uses the standard denoiser when set to false. Note this requires the denoiser to be enabled to function.\n"
-                   "The reference denoiser allows for a reference multi-sample per pixel contribution to accumulate which should converge slowly to the ideal result the renderer is working towards.\n"
-                   "Useful for analyzing quality differences in various denoising methods, post-processing filters, or for more accurately comparing subtle effects of potentially biased rendering techniques which may be hard to see through usual noise and filtering.\n"
-                   "Also useful for higher quality artistic renders of a scene beyond what is possible in realtime.");
+                   "Enables reference \"denoiser\" (~ accumulation mode) when set to true, otherwise uses a standard denoiser.\n"
+                   "The reference denoiser accumulates frames over time to generate a reference multi-sample per pixel contribution\n"
+                   "which should converge slowly to the ideal result the renderer is working towards.\n"
+                   "It is useful for analyzing quality differences in various denoising methods, post-processing filters,\n"
+                   "or for more accurately comparing subtle effects of potentially biased rendering techniques\n"
+                   "which may be hard to see through noise and filtering.\n"
+                   "It is also useful for higher quality artistic renders of a scene beyond what is possible in real-time.");
     RTX_OPTION_ENV("rtx", bool, denoiseDirectAndIndirectLightingSeparately, true, "DXVK_DENOISE_DIRECT_AND_INDIRECT_LIGHTING_SEPARATELY", "Denoising quality, high uses separate denoising of direct and indirect lighting for higher quality at the cost of performance.");
     RTX_OPTION("rtx", bool, replaceDirectSpecularHitTWithIndirectSpecularHitT, true, "");
     RTX_OPTION("rtx", bool, adaptiveResolutionDenoising, true, "");
