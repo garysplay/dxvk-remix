@@ -2230,7 +2230,7 @@ namespace dxvk {
         ImGui::SliderFloat("Sky Min Z Threshold", &RtxOptions::Get()->skyMinZThresholdObject(), 0.0f, 1.0f);
         skyAutoDetectCombo.getKey(&RtxOptions::Get()->skyAutoDetectObject());
 
-        if (ImGui::CollapsingHeader("3D Skybox Settings", collapsingHeaderClosedFlags)) {
+        if (ImGui::CollapsingHeader("3D Skybox Settings [Experimental]", collapsingHeaderClosedFlags)) {
           ImGui::Checkbox("Enable Shared Depth", &RtxOptions::skySharedDepthObject() );
           ImGui::Separator();
           ImGui::Checkbox("Enable 3D Skybox Pathtracing ", &RtxOptions::skyBoxPathTracingObject());
